@@ -5,13 +5,11 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQuery;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@NamedQuery(name = "Product.getCategoryForProduct", query = "SELECT category FROM Product p WHERE product_id = ?1")
 public class Product {
 	
 	public Product() {
