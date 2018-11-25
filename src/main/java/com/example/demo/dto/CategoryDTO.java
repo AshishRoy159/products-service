@@ -1,6 +1,5 @@
 package com.example.demo.dto;
 
-
 public class CategoryDTO {
 
 	private String categoryId;

@@ -13,6 +13,7 @@ import com.example.demo.dto.ProductDTO;
 import com.example.demo.exceptions.APIException;
 import com.example.demo.models.Category;
 import com.example.demo.models.Product;
+import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.services.ProductService;
 
@@ -21,8 +22,11 @@ public class ProductServiceImpl implements ProductService {
 
 	private ProductRepository productRepository;
 
-	public ProductServiceImpl(ProductRepository productRepository) {
+	private CategoryRepository categoryRepository;
+
+	public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
 		this.productRepository = productRepository;
+		this.categoryRepository = categoryRepository;
 	}
 
 	@Override
@@ -32,32 +36,12 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	public ProductDTO mapProductToDTO(Product product) {
-
-		ProductDTO productDTO = new ProductDTO();
-		productDTO.setProductId(product.getProductId());
-		productDTO.setProductName(product.getProductName());
-		productDTO.setDescription(product.getDescription());
-		productDTO.setPrice(product.getPrice());
-		productDTO.setCategory(product.getCategory());
-		productDTO.setQuantity(product.getQuantity());
-		productDTO.setSize(Arrays.asList(product.getSize().split(",")));
-
-		return productDTO;
-	}
-
-	@Override
 	public ProductDTO createNewProduct(ProductDTO productDTO) {
 
 		Product product = new Product();
 
 		product.setProductId(productDTO.getProductId());
-		product.setProductName(productDTO.getProductName());
-		product.setDescription(productDTO.getDescription());
-		product.setPrice(productDTO.getPrice());
-		product.setCategory(productDTO.getCategory());
-		product.setQuantity(productDTO.getQuantity());
-		product.setSize(StringUtils.join(productDTO.getSize(), ','));
+		mapProductDTOToProduct(product, productDTO);
 
 		return mapProductToDTO(productRepository.save(product));
 	}
@@ -73,23 +57,19 @@ public class ProductServiceImpl implements ProductService {
 	public ProductDTO updateProductByProductId(String productId, ProductDTO productDTO) {
 
 		Product product = validateProduct(productId);
-		
-		product.setProductName(productDTO.getProductName());
-		product.setDescription(productDTO.getDescription());
-		product.setPrice(productDTO.getPrice());
-		product.setQuantity(productDTO.getQuantity());
-		product.setCategory(productDTO.getCategory());
-		product.setSize(StringUtils.join(productDTO.getSize(), ','));
+
+		mapProductDTOToProduct(product, productDTO);
 		product = productRepository.save(product);
-		
+
 		return mapProductToDTO(product);
 	}
 
 	@Override
 	public Category getCategoryForProduct(String productId) {
 
-		Product product = validateProduct(productId);
-		return product.getCategory();
+		validateProduct(productId);
+		String categoryId = productRepository.getCategoryForProduct(productId);
+		return categoryRepository.getOne(categoryId);
 	}
 
 	@Override
@@ -113,5 +93,31 @@ public class ProductServiceImpl implements ProductService {
 			throw new APIException("No product exists with the given id", HttpStatus.NOT_FOUND);
 		}
 		return product.get();
+	}
+
+	@Override
+	public ProductDTO mapProductToDTO(Product product) {
+
+		ProductDTO productDTO = new ProductDTO();
+		productDTO.setProductId(product.getProductId());
+		productDTO.setProductName(product.getProductName());
+		productDTO.setDescription(product.getDescription());
+		productDTO.setPrice(product.getPrice());
+		productDTO.setCategory(product.getCategory());
+		productDTO.setQuantity(product.getQuantity());
+		productDTO.setSize(Arrays.asList(product.getSize().split(",")));
+
+		return productDTO;
+	}
+
+	private void mapProductDTOToProduct(Product product, ProductDTO productDTO) {
+
+		product.setProductName(productDTO.getProductName());
+		product.setDescription(productDTO.getDescription());
+		product.setPrice(productDTO.getPrice());
+		product.setQuantity(productDTO.getQuantity());
+		product.setCategory(productDTO.getCategory());
+		product.setSize(StringUtils.join(productDTO.getSize(), ','));
+
 	}
 }

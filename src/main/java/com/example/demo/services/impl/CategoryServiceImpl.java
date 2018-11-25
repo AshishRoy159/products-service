@@ -1,11 +1,9 @@
 package com.example.demo.services.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +26,6 @@ public class CategoryServiceImpl implements CategoryService{
 	
 	private ProductService productService;
 	
-	@Autowired
 	public CategoryServiceImpl(CategoryRepository categoryRepository, ProductRepository productRepository, ProductService productService) {
 		this.categoryRepository = categoryRepository;
 		this.productRepository = productRepository;
@@ -77,20 +74,8 @@ public class CategoryServiceImpl implements CategoryService{
 		
 		Category category = getCategoryById(categoryId);
 		List<Product> products = category.getProducts();
-		List<ProductDTO> productDtos = new ArrayList<>();
-		for (Product product : products) {
-			ProductDTO productDTO = new ProductDTO();
-			productDTO.setProductId(product.getProductId());
-			productDTO.setProductName(product.getProductName());
-			productDTO.setDescription(product.getDescription());
-			productDTO.setPrice(product.getPrice());
-			productDTO.setQuantity(product.getQuantity());
-			productDTO.setCategory(category);
-			productDTO.setSize(Arrays.asList(product.getSize().split(",")));
-			
-			productDtos.add(productDTO);
-		}
-		return productDtos;
+		
+		return products.stream().map(product -> productService.mapProductToDTO(product)).collect(Collectors.toList());
 	}
 
 	@Override
